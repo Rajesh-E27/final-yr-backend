@@ -5,10 +5,14 @@ const twilio = require("twilio");
 const cors = require("cors");
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+app.get("/",(req,res)=>{
+  res.send("SOS backend is running");
+});
 
 // 🔐 Replace with your real credentials
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -36,6 +40,6 @@ app.post("/send-sos", async (req, res) => {
 });
 
 // 🚀 Start Server
-app.listen(port, () => {
-  console.log("Server running on http://localhost:3000");
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
