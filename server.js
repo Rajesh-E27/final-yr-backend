@@ -23,7 +23,7 @@ const client = twilio(accountSid, authToken);
 // 🚨 SOS API
 app.post("/send-sos", async (req, res) => {
 
-  console.log("Incoming request:", req.body);
+  console.log("Incoming SOS:", req.body);
 
   const { to, message } = req.body;
 
@@ -32,19 +32,18 @@ app.post("/send-sos", async (req, res) => {
     const response = await client.messages.create({
       from: process.env.TWILIO_WHATSAPP_NUMBER,
       to: `whatsapp:${to}`,
-      body: message,
+      body: message
     });
 
     console.log("Message SID:", response.sid);
 
-    res.status(200).json({ success: true });
+    res.json({success:true});
 
   } catch (error) {
 
-    console.error("Twilio Error:", error.message);
+    console.log("Twilio error:", error.message);
 
-    res.status(500).json({ success: false, error: error.message });
-
+    res.json({success:false});
   }
 
 });
@@ -70,4 +69,5 @@ app.post("/send-sos", async (req, res) => {
 // 🚀 Start Server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+
 });
