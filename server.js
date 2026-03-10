@@ -22,22 +22,50 @@ const client = twilio(accountSid, authToken);
 
 // 🚨 SOS API
 app.post("/send-sos", async (req, res) => {
+
+  console.log("Incoming request:", req.body);
+
   const { to, message } = req.body;
 
   try {
+
     const response = await client.messages.create({
-      from: process.env.TWILIO_WHATSAPP_NUMBER, // Twilio Sandbox number
+      from: process.env.TWILIO_WHATSAPP_NUMBER,
       to: `whatsapp:${to}`,
       body: message,
     });
-    
+
     console.log("Message SID:", response.sid);
+
     res.status(200).json({ success: true });
+
   } catch (error) {
-    console.error("Error sending message:", error);
+
+    console.error("Twilio Error:", error.message);
+
     res.status(500).json({ success: false, error: error.message });
+
   }
+
 });
+
+// app.post("/send-sos", async (req, res) => {
+//   const { to, message } = req.body;
+
+//   try {
+//     const response = await client.messages.create({
+//       from: process.env.TWILIO_WHATSAPP_NUMBER, // Twilio Sandbox number
+//       to: `whatsapp:${6374380861}`,
+//       body: message,
+//     });
+    
+//     console.log("Message SID:", response.sid);
+//     res.status(200).json({ success: true });
+//   } catch (error) {
+//     console.error("Error sending message:", error);
+//     res.status(500).json({ success: false, error: error.message });
+//   }
+// });
 
 // 🚀 Start Server
 app.listen(PORT, () => {
