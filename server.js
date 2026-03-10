@@ -30,7 +30,7 @@ app.post("/send-sos", async (req, res) => {
   try {
 
     const response = await client.messages.create({
-      from: process.env.TWILIO_WHATSAPP_NUMBER,
+      from: "whatsapp:+14155238886",
       to: `whatsapp:${to}`,
       body: message
     });
@@ -71,3 +71,4 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 
 });
+
