@@ -10,65 +10,85 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.get("/",(req,res)=>{
+app.get("/", (req, res) => {
   res.send("SOS backend is running");
 });
 
-// 🔐 Replace with your real credentials
+// 🔐 Twilio credentials
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 
 const client = twilio(accountSid, authToken);
 
-// 🚨 SOS API
+// ===============================
+// 🚨 WHATSAPP SOS (EXISTING)
+// ===============================
 app.post("/send-sos", async (req, res) => {
+  console.log("Incoming WhatsApp request:", req.body);
 
-  console.log("Incoming SOS:", req.body);
-
-  const { to, message } = req.body;
+  const { contacts, message } = req.body;
 
   try {
+    const validContacts = contacts.filter(
+      (phone) => phone && phone.startsWith("+")
+    );
 
-    const response = await client.messages.create({
-      from: "whatsapp:+14155238886",
-      to: `whatsapp:${to}`,
-      body: message
-    });
+    console.log("Valid contacts:", validContacts);
 
-    console.log("Message SID:", response.sid);
+    const results = await Promise.all(
+      validContacts.map((phone) =>
+        client.messages.create({
+          from: "whatsapp:+14155238886",
+          to: `whatsapp:${phone}`,
+          body: message,
+        })
+      )
+    );
 
-    res.json({success:true});
+    console.log("WhatsApp sent:", results.length);
+    res.status(200).json({ success: true });
 
   } catch (error) {
-
-    console.log("Twilio error:", error.message);
-
-    res.json({success:false});
+    console.error("WhatsApp Error:", error.message);
+    res.status(500).json({ success: false });
   }
-
 });
 
-// app.post("/send-sos", async (req, res) => {
-//   const { to, message } = req.body;
+// ===============================
+// 📩 SMS SOS (NEW FEATURE)
+// ===============================
+app.post("/send-sms", async (req, res) => {
+  console.log("Incoming SMS request:", req.body);
 
-//   try {
-//     const response = await client.messages.create({
-//       from: process.env.TWILIO_WHATSAPP_NUMBER, // Twilio Sandbox number
-//       to: `whatsapp:${6374380861}`,
-//       body: message,
-//     });
-    
-//     console.log("Message SID:", response.sid);
-//     res.status(200).json({ success: true });
-//   } catch (error) {
-//     console.error("Error sending message:", error);
-//     res.status(500).json({ success: false, error: error.message });
-//   }
-// });
+  const { contacts, message } = req.body;
+
+  try {
+    const validContacts = contacts.filter(
+      (phone) => phone && phone.startsWith("+")
+    );
+
+    console.log("Valid SMS contacts:", validContacts);
+
+    const results = await Promise.all(
+      validContacts.map((phone) =>
+        client.messages.create({
+          body: message,
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to: phone,
+        })
+      )
+    );
+
+    console.log("SMS sent:", results.length);
+    res.status(200).json({ success: true });
+
+  } catch (error) {
+    console.error("SMS Error:", error.message);
+    res.status(500).json({ success: false });
+  }
+});
 
 // 🚀 Start Server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-
 });
-
